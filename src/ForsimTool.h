@@ -34,13 +34,31 @@ namespace OpenSim {
 //                              Forsim Tool
 //=============================================================================
 /**
-This tool is facilitates forward dynamic simulations of joint mechanics.
-It is specifically designed for models that represent articular contact using
-Smith2018ArticularContactForce components, however, it can be used with all
-models. 
+The ForsimTool enables forward dynamic simulations of joint mechanics to be 
+performed. Practically, this allows simulations of cadaver experiments, 
+passive clinical examinations, and simulations where the muscle forces or 
+excitations are known inputs. 
 
+Fundamentally, this tool is similar to the ForwardTool in the opensim-core,
+but the interface is designed to facilitate forward simulations involving 
+joint mechanics and specifically articular contact. Additionally, the 
+forsim tool uses an implicit integrator (SimTK::CPODES::BDF), which provides 
+superior performance for simulations that involve contact compared to the 
+explicit integrators used by the existing OpenSim ForwardTool. 
 
+The following optional input input files can be used to define time varying 
+simulation parameters:
+
+actuator_input_file: Define muscle and actuator controls (excitations), 
+activations, or forces vs time.
+
+external_loads_file: Define the external loads and the model segments
+that they are acting on. 
+
+prescribed_coordinate_file: Define the prescribed coordinates in the 
+model and their values vs time.  
 */
+
 class OSIMPLUGIN_API ForsimTool : public Object {
 
 OpenSim_DECLARE_CONCRETE_OBJECT(ForsimTool, Object);
@@ -81,7 +99,7 @@ public:
     OpenSim_DECLARE_PROPERTY(integrator_accuracy, double,
         "Accuracy setting for BDF integrator. The Default value is 1e-6")
 
-    OpenSim_DECLARE_PROPERTY(internal_step_limit, double,
+    OpenSim_DECLARE_PROPERTY(internal_step_limit, int,
         "Limit on the number of internal steps that can be taken by BDF "
         "integrator. If -1, then there is no limit. The Default value is -1")
 

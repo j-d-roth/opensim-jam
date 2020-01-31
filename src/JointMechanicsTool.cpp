@@ -80,7 +80,7 @@ void JointMechanicsTool::constructProperties()
     constructProperty_resample_step_size(-1);
     constructProperty_normalize_to_cycle(false);
     constructProperty_lowpass_filter_frequency(-1);
-    constructProperty_print_processed_kinematcs(false);
+    constructProperty_print_processed_kinematics(false);
 
     constructProperty_contacts(defaultListAll);
     constructProperty_contact_outputs(defaultListAll);
@@ -114,14 +114,21 @@ void JointMechanicsTool::run() {
     //Set the max number of points a ligament or muscle path can contain
     _max_path_points = 100;
 
+    //Make results directory
+    int makeDir_out = IO::makeDir(get_results_directory());
+    if (errno == ENOENT && makeDir_out == -1) {
+        OPENSIM_THROW(Exception, "Could not create " +
+            get_results_directory() +
+            "Possible reason: This tool cannot make new folder with subfolder.");
+    }
+
     if (_model == NULL) {
         OPENSIM_THROW(Exception, "No model was set in JointMechanicsTool");
     }
 
     SimTK::State state = _model->initSystem();
 
-    //Get Coordinates and Speeds from file
-    formQandUMatrixFromFile();
+    readStatesFromFile();
 
     initialize(state);
 
@@ -144,7 +151,7 @@ void JointMechanicsTool::run() {
         //Set Muscle States
         if(!_muscle_paths.empty()){
             int nMsl = 0;
-            for (const Muscle& msl : _model->getComponentList<Muscle>()) {
+            for (const Muscle& msl : _model->updComponentList<Muscle>()) {
                 for (int j = 0; j < _muscle_state_names[nMsl].size(); ++j) {
                     msl.setStateVariableValue(state, _muscle_state_names[nMsl][j], _muscle_state_data[nMsl][j][i]);
                 }
@@ -165,7 +172,7 @@ void JointMechanicsTool::run() {
     printResults(get_results_file_basename(), get_results_directory());
 }
 
-void JointMechanicsTool::formQandUMatrixFromFile() {
+void JointMechanicsTool::readStatesFromFile() {
 
     std::string saveWorkingDirectory = IO::getCwd();
     IO::chDir(_directoryOfSetupFile);
@@ -204,7 +211,7 @@ void JointMechanicsTool::formQandUMatrixFromFile() {
         store.resampleLinear(get_resample_step_size());
     }
 
-    if (get_print_processed_kinematcs()) {
+    if (get_print_processed_kinematics()) {
         store.print(get_results_directory() + "/" + get_results_file_basename() + "_processed_kinematics.sto");
     }
 
@@ -273,7 +280,7 @@ void JointMechanicsTool::formQandUMatrixFromFile() {
     }
 
     //Gather Muscle States
-    if(!_muscle_paths.empty()){
+    //if(!_muscle_paths.empty()){
         for (const Muscle& msl : _model->updComponentList<Muscle>()) {
             std::vector<std::string> state_names;
             std::vector<SimTK::Vector> state_values;
@@ -296,10 +303,11 @@ void JointMechanicsTool::formQandUMatrixFromFile() {
 
                 SimTK::Vector state_data(_n_frames, 0.0);
                 if (col_ind == -1) {
-                    std::cout << "WARNING:: Muscle state (" + msl_state + ") NOT found in coordinates file. Assumed 0.0" << std::endl;
+                //    std::cout << "WARNING:: Muscle state (" + msl_state + ") NOT found in coordinates file. Assumed 0.0" << std::endl;
                 }
                 else {
                     Array<double> data;
+                    
                     store.getDataColumn(col_labels[col_ind], data);
                     for (int j = 0; j < data.getSize(); ++j) {
                         state_data.set(j, data[j]);
@@ -309,7 +317,7 @@ void JointMechanicsTool::formQandUMatrixFromFile() {
             }
             _muscle_state_data.push_back(state_values);
         }
-    }
+    //}
 }
 
 void JointMechanicsTool::initialize(SimTK::State& state) {
@@ -800,17 +808,15 @@ void JointMechanicsTool::setupCoordinateStorage() {
     }
 }
 
-
-
 int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
 {
     _model->realizeReport(s);
 
     //Store mesh vertex locations
     std::string frame_name = get_output_frame();
-    const Frame& frame = _model->getComponent<Frame>(frame_name);
+    const Frame& frame = _model->updComponent<Frame>(frame_name);
     std::string origin_name = get_output_origin();
-    const Frame& origin = _model->getComponent<Frame>(origin_name);
+    const Frame& origin = _model->updComponent<Frame>(origin_name);
 
     SimTK::Vec3 origin_pos = origin.findStationLocationInAnotherFrame(s, SimTK::Vec3(0), frame);
 
@@ -835,8 +841,8 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
 
             const SimTK::PolygonalMesh& mesh = _attach_geo_meshes[i];
 
-            SimTK::Transform trans = _model->getComponent<PhysicalFrame>(_attach_geo_frames[i]).findTransformBetween(s, frame);
-
+            SimTK::Transform trans = _model->updComponent<PhysicalFrame>(_attach_geo_frames[i]).findTransformBetween(s, frame);
+            
             for (int j = 0; j < mesh.getNumVertices(); ++j) {
                 _attach_geo_vertex_locations[i](frame_num, j) = trans.shiftFrameStationToBase(mesh.getVertexPosition(j)) - origin_pos;
             }
@@ -995,8 +1001,6 @@ int JointMechanicsTool::printResults(const std::string &aBaseName,const std::str
 {
     std::string file_path = get_results_directory();
     std::string base_name = get_results_file_basename();
-
-    IO::makeDir(get_results_directory());
 
     //Analysis Results
     _model->updAnalysisSet().printResults(get_results_file_basename(), get_results_directory());
