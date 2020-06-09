@@ -2,8 +2,8 @@ REM ===========================
 REM Run Passive Flexion Example
 REM ===========================
 
-set BIN=%CD%\..\..\bin
-set OPENSIM=%CD%\..\..\opensim
+set BIN=%CD%\..\..\bin\win
+set OPENSIM=%CD%\..\..\opensim\win
 
 rem Let Windows know where the plugin and opensim libraries are
 set PATH=%BIN%;%OPENSIM%;%PATH%

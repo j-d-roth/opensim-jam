@@ -129,6 +129,8 @@
     <settle_threshold>1e-4</settle_threshold>
     <!--Set the integrator accuracy for initializing forward simulation. The default value is 1e-6.-->
     <settle_accuracy>1e-5</settle_accuracy>
+    <!--Limit on the number of internal steps that can be taken by BDF integrator initializing forward simulation. If -1, then there is no limit. The Default value is -1.-->
+    <settle_internal_step_limit>50000</settle_internal_step_limit>
     <!--Print the model states during the forward simulation to a .sto file in the settle_sim_results_dir.-->
     <print_settle_sim_results>true</print_settle_sim_results>
     <!--Path to the directory where the settling forward simulation results will be printed.-->
@@ -142,7 +144,7 @@
     <!--Maximum acceptable difference between simulated and observed accelerations (udots) that is still used if no COMAK iterations converge. If the max difference between the udots for all iterations is greater than udot_worse_case_tolerance then no acceptable COMAK solution was found, and the solution from previous time step is used for the current time step. The default value is 50.0.-->
     <udot_worse_case_tolerance>50</udot_worse_case_tolerance>
     <!--The size of the perturbation applied to COMAKSecondaryCoordinates when computing the gradient of the acceleration constraints in the COMAK optimization to changes in the secondary coordinate values. The default value is 1e-8.-->
-    <unit_udot_epsilon>1e-08</unit_udot_epsilon>
+    <unit_udot_epsilon>1e-8</unit_udot_epsilon>
     <!--The weighting on Smith2018ArticularContactForce potential energy term in COMAK cost function. The default value is 0.-->
     <contact_energy_weight>0</contact_energy_weight>
     <!--List of COMAKCostFunctionWeight objects.-->

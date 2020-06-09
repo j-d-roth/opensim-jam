@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimPluginDLL.h"
-#include <OpenSim\Simulation\Model\Model.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
@@ -149,6 +149,11 @@ public:
     OpenSim_DECLARE_PROPERTY(settle_accuracy, double, 
         "Set the integrator accuracy for initializing forward simulation. "
         "The default value is 1e-6.")
+
+    OpenSim_DECLARE_PROPERTY(settle_internal_step_limit, int, 
+        "Limit on the number of internal steps that can be taken by BDF " 
+        "integrator initializing forward simulation. If -1, then there is no "
+        "limit. The Default value is -1.")
 
     OpenSim_DECLARE_PROPERTY(print_settle_sim_results, bool, 
         "Print the model states during the forward simulation to a .sto file "

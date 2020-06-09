@@ -3,8 +3,8 @@ REM Run Anterior Laxity Example
 REM ===========================
 
 
-set BIN=%CD%\..\..\bin
-set OPENSIM=%CD%\..\..\opensim
+set BIN=%CD%\..\..\bin\win
+set OPENSIM=%CD%\..\..\opensim\win
 
 REM Let Windows know where the plugin and opensim libraries are
 set PATH=%BIN%;%OPENSIM%;%PATH%
